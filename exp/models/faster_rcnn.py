@@ -1,7 +1,7 @@
 import sys
 # insert at 1, 0 is the script path (or '' in REPL)
 sys.path.insert(1, '../dataset/')
-
+sys.path.insert(1, '.')
 import pandas as pd
 import numpy as np
 import cv2
@@ -19,11 +19,11 @@ from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
 
 from torch.utils.data import DataLoader, Dataset
 import pytorch_lightning as pl
-from pytorch_lightning.metrics import AveragePrecision
+from torchmetrics import AveragePrecision
 
-from rice_dataset import RiceDataset
+from dataset.rice_dataset import RiceDataset
 
-from utils import get_train_transform, get_valid_transform, collate_fn, format_prediction_string
+from .model_utils import *
 
 class FasterRCNNDetector(pl.LightningModule):
     def __init__(self, **kwargs):
@@ -35,8 +35,8 @@ class FasterRCNNDetector(pl.LightningModule):
         self.model.roi_heads.box_predictor = FastRCNNPredictor(in_features, num_classes)
         self.learning_rate = 1e-3
         self.batch_size = 4
-        self.anno_dir = kwargs.anno_dir
-        self.image_dir = kwargs.image_dir
+        self.anno_dir = kwargs['anno_dir']
+        self.image_dir = kwargs['image_dir']
 
     def forward(self, x):
         return self.model(x)
