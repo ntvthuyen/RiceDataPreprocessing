@@ -16,7 +16,7 @@ def get_train_transform():
     return A.Compose([
         A.Flip(0.5),
         ToTensorV2(p=1.0)
-    ], bbox_params={'format': 'pascal_voc', 'label_fields': ['labels']})
+    ], bbox_params=A.BboxParams(format='pascal_voc',label_fields=['class_labels']))
 
 def get_valid_transform():
     return A.Compose([

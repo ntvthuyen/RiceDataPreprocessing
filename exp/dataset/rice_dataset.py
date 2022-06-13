@@ -34,19 +34,21 @@ class RiceDataset(Dataset):
                 image = sample['image']
             return image, image_id
 
-        boxes = records[['xmin', 'ymin', 'xmax', 'ymax']].values
-
+        boxes = torch.as_tensor(records[['xmin', 'ymin', 'xmax', 'ymax']].values, dtype = torch.float32)
         area = (boxes[:, 3] - boxes[:, 1]) * (boxes[:, 2] - boxes[:, 0])
         area = torch.as_tensor(area, dtype=torch.float32)
         # all the labels are shifted by 1 to accomodate background
         class_id = None
         if '10018' in image_id:
-            class_id = 0
+            class_id = 0.0
         elif '12221' in image_id:
-            class_id = 1
+            class_id = 1.0
         else:
-            class_id = 2
-        labels = torch.squeeze(torch.as_tensor((class_id,), dtype=torch.int64))
+            class_id = 2.0
+        class_ids = [class_id]*(len(records))
+        
+        labels = torch.as_tensor(class_ids, dtype=torch.int64)
+        
         iscrowd = torch.zeros((records.shape[0],), dtype=torch.int64)
 
         target = {}
@@ -56,6 +58,13 @@ class RiceDataset(Dataset):
         target['image_id'] = torch.tensor([idx])
         target['iscrowd'] = iscrowd
         if self.transforms:
+            transformed = self.transforms(image=image, bboxes=boxes, class_labels=labels)
+            image = transformed['image']
+            target["boxes"] = torch.as_tensor(transformed['bboxes'], dtype = torch.float32)
+            target["labels"] = torch.as_tensor(transformed['class_labels'], dtype=torch.int64)
+        
+        '''
+        if self.transforms:
             sample = {
                 'image': image,
                 'bboxes': target['boxes'],
@@ -64,7 +73,7 @@ class RiceDataset(Dataset):
             sample = self.transforms(**sample)
             image = sample['image']
             target['boxes'] = torch.as_tensor(sample['bboxes'])
-
+        '''
         return image, target
 
     def __len__(self):

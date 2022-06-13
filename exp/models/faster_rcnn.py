@@ -45,7 +45,7 @@ class FasterRCNNDetector(pl.LightningModule):
         self.train_dataset = RiceDataset(self.anno_dir, self.image_dir, get_train_transform())
 
     def train_dataloader(self):
-        return DataLoader(self.train_dataset, batch_size=self.batch_size, shuffle=True, pin_memory=True, num_workers=4, collate_fn=collate_fn)
+        return DataLoader(self.train_dataset, batch_size=self.batch_size, shuffle=True, pin_memory=True, num_workers=1, collate_fn=collate_fn)
 
     def training_step(self, batch, batch_idx):
         images, targets = batch
