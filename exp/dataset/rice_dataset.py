@@ -75,6 +75,5 @@ class RiceDataset(Dataset):
         return image, target
 
     def __len__(self):
-        return 3
-    #len(self.anno_list)
+        return len(self.anno_list)
 
