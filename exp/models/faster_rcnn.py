@@ -27,8 +27,6 @@ from pl_bolts.utils.warnings import warn_missing_pkg
 
 from dataset.rice_dataset import RiceDataset
 
-from .model_utils import *
-
 if _TORCHVISION_AVAILABLE:
     from torchvision.models.detection.faster_rcnn import FasterRCNN as torchvision_FasterRCNN
     from torchvision.models.detection.faster_rcnn import FastRCNNPredictor, fasterrcnn_resnet50_fpn
@@ -55,7 +53,9 @@ class FasterRCNNDetector(pl.LightningModule):
         in_features = self.model.roi_heads.box_predictor.cls_score.in_features
         self.model.roi_heads.box_predictor = FastRCNNPredictor(in_features, num_classes)
         self.learning_rate = 1e-3
-        self.batch_size = 3
+        self.transform = kwargs['transform']
+        self.test_transform = kwargs['test_transform']
+        self.batch_size = kwargs['batch_size']
         self.anno_dir = kwargs['anno_dir']
         self.image_dir = kwargs['image_dir']
 
@@ -63,8 +63,8 @@ class FasterRCNNDetector(pl.LightningModule):
         return self.model(x)
 
     def prepare_data(self):
-        self.train_dataset = RiceDataset(self.anno_dir, self.image_dir, get_train_transform())
-        self.val_dataset = RiceDataset(self.anno_dir, self.image_dir, get_val_transform())
+        self.train_dataset = RiceDataset(self.anno_dir, self.image_dir, self.transform)
+        self.val_dataset = RiceDataset(self.anno_dir, self.image_dir, self.test_transform())
 
 
     def train_dataloader(self):
@@ -80,8 +80,7 @@ class FasterRCNNDetector(pl.LightningModule):
         targets = [{k: v for k, v in t.items()} for t in targets]
         loss_dict = self.model(images, targets)
         loss = sum(loss for loss in loss_dict.values())
-        self.log('Loss', loss, on_step=True, on_epoch=True, prog_bar=True, batch_size=self.batch_size)
-        return {"loss": loss}
+        return {"loss": loss, "log": loss_dict}
     
 
     def validation_step(self, batch, batch_idx):

@@ -22,7 +22,7 @@ SEED=2484
 DEVICE=torch.device('cuda')
 pl.utilities.seed.seed_everything(SEED)
 
-net = FasterRCNNDetector(anno_dir='/home/lightkeima/Project/RiceDataSet/new_annotation/anno_train', image_dir='/home/lightkeima/Project/RiceDataSet/Lua//JPGimages/train')
+net = FasterRCNNDetector(anno_dir='/home/lightkeima/Project/new_annotation/anno_train', image_dir='/home/lightkeima/Project/Lua/JPGimages/train', batch_size=3)
 trainer = pl.Trainer(max_epochs=5, accelerator=['cpu']
 #gpus=0
 , progress_bar_refresh_rate=100)
