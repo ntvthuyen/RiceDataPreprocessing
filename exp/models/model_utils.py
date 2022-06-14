@@ -12,9 +12,17 @@ from torchvision.ops import box_iou, MultiScaleRoIAlign
 from torchvision import models
 
 
+
+def get_val_transform():
+    return A.Compose([
+        A.LongestMaxSize(max_size=512),
+        ToTensorV2(p=1.0)
+    ], bbox_params=A.BboxParams(format='pascal_voc',label_fields=['class_labels']))
+
 def get_train_transform():
     return A.Compose([
         A.Flip(0.5),
+        A.LongestMaxSize(max_size=512),
         ToTensorV2(p=1.0)
     ], bbox_params=A.BboxParams(format='pascal_voc',label_fields=['class_labels']))
 

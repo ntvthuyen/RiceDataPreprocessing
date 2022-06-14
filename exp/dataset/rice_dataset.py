@@ -50,7 +50,6 @@ class RiceDataset(Dataset):
         labels = torch.as_tensor(class_ids, dtype=torch.int64)
         
         iscrowd = torch.zeros((records.shape[0],), dtype=torch.int64)
-
         target = {}
         target['boxes'] = boxes
         target['labels'] = labels
@@ -62,7 +61,6 @@ class RiceDataset(Dataset):
             image = transformed['image']
             target["boxes"] = torch.as_tensor(transformed['bboxes'], dtype = torch.float32)
             target["labels"] = torch.as_tensor(transformed['class_labels'], dtype=torch.int64)
-        
         '''
         if self.transforms:
             sample = {
@@ -77,5 +75,6 @@ class RiceDataset(Dataset):
         return image, target
 
     def __len__(self):
-        return len(self.anno_list)
+        return 3
+    #len(self.anno_list)
 
