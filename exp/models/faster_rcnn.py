@@ -64,16 +64,14 @@ class FasterRCNNDetector(pl.LightningModule):
 
     def prepare_data(self):
         self.train_dataset = RiceDataset(self.anno_dir, self.image_dir, self.transform)
-        self.val_dataset = RiceDataset(self.anno_dir, self.image_dir, self.test_transform())
+        self.val_dataset = RiceDataset(self.anno_dir, self.image_dir, self.test_transform)
 
 
     def train_dataloader(self):
         return DataLoader(self.train_dataset, batch_size=self.batch_size, shuffle=True, pin_memory=True, num_workers=4, collate_fn=collate_fn)
 
-
     def val_dataloader(self):
         return DataLoader(self.val_dataset, batch_size=self.batch_size, shuffle=False, pin_memory=True, num_workers=4, collate_fn=collate_fn)
-
 
     def training_step(self, batch, batch_idx):
         images, targets = batch
@@ -82,7 +80,6 @@ class FasterRCNNDetector(pl.LightningModule):
         loss = sum(loss for loss in loss_dict.values())
         return {"loss": loss, "log": loss_dict}
     
-
     def validation_step(self, batch, batch_idx):
         images, targets = batch
         # fasterrcnn takes only images for eval() mode
