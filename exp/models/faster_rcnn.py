@@ -24,7 +24,7 @@ from torchmetrics import AveragePrecision
 from pl_bolts.models.detection.faster_rcnn import create_fasterrcnn_backbone
 from pl_bolts.utils import _TORCHVISION_AVAILABLE
 from pl_bolts.utils.warnings import warn_missing_pkg
-
+from model_utils import *
 from dataset.rice_dataset import RiceDataset
 
 if _TORCHVISION_AVAILABLE:
@@ -65,7 +65,6 @@ class FasterRCNNDetector(pl.LightningModule):
     def prepare_data(self):
         self.train_dataset = RiceDataset(self.anno_dir, self.image_dir, self.transform)
         self.val_dataset = RiceDataset(self.anno_dir, self.image_dir, self.test_transform)
-
 
     def train_dataloader(self):
         return DataLoader(self.train_dataset, batch_size=self.batch_size, shuffle=True, pin_memory=True, num_workers=4, collate_fn=collate_fn)
