@@ -18,6 +18,8 @@ import pytorch_lightning as pl
 from torchmetrics import AveragePrecision
 from models.faster_rcnn import *
 from dataset.rice_dataset import *
+from models.model_utils import *
+
 SEED=2484
 DEVICE=torch.device('cuda')
 pl.utilities.seed.seed_everything(SEED)
@@ -46,4 +48,4 @@ with torch.no_grad():
             boxes = outputs[i]['boxes'].data.cpu().numpy()
             labels = outputs[i]['labels'].data.cpu().numpy()
             scores = outputs[i]['scores'].data.cpu().numpy()
- 
+code cc
