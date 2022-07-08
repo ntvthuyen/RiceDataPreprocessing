@@ -48,4 +48,3 @@ with torch.no_grad():
             boxes = outputs[i]['boxes'].data.cpu().numpy()
             labels = outputs[i]['labels'].data.cpu().numpy()
             scores = outputs[i]['scores'].data.cpu().numpy()
-code cc
