@@ -24,7 +24,7 @@ from torchmetrics import AveragePrecision
 from pl_bolts.models.detection.faster_rcnn import create_fasterrcnn_backbone
 from pl_bolts.utils import _TORCHVISION_AVAILABLE
 from pl_bolts.utils.warnings import warn_missing_pkg
-from model_utils import *
+from .model_utils import *
 from dataset.rice_dataset import RiceDataset
 
 if _TORCHVISION_AVAILABLE:
@@ -48,8 +48,8 @@ class FasterRCNNDetector(pl.LightningModule):
     def __init__(self, **kwargs):
         super().__init__()
 
-        self.model = models.detection.fasterrcnn_resnet50_fpn(pretrained=True)
-        num_classes = 3
+        self.model = models.detection.fasterrcnn_resnet50_fpn(weights=torchvision.models.detection.faster_rcnn.FasterRCNN_ResNet50_FPN_Weights.DEFAULT)
+        num_classes = 4
         in_features = self.model.roi_heads.box_predictor.cls_score.in_features
         self.model.roi_heads.box_predictor = FastRCNNPredictor(in_features, num_classes)
         self.learning_rate = 1e-3
@@ -89,6 +89,7 @@ class FasterRCNNDetector(pl.LightningModule):
     def validation_epoch_end(self, outs):
         avg_iou = torch.stack([o["val_iou"] for o in outs]).mean()
         logs = {"val_iou": avg_iou}
+        self.log("avg_val_iou", avg_iou)
         return {"avg_val_iou": avg_iou, "log": logs}
 
     def configure_optimizers(self):

@@ -13,15 +13,16 @@ from torchvision import models
 
 
 
-def get_val_transform(max_size=512):
+def get_val_transform(max_size=1024):
     return A.Compose([
         A.LongestMaxSize(max_size=max_size),
         ToTensorV2(p=1.0)
     ], bbox_params=A.BboxParams(format='pascal_voc',label_fields=['class_labels']))
 
-def get_train_transform(max_size=512):
+def get_train_transform(max_size=1024):
     return A.Compose([
         A.Flip(0.5),
+        A.Rotate([-90,90]),
         A.LongestMaxSize(max_size=max_size),
         ToTensorV2(p=1.0)
     ], bbox_params=A.BboxParams(format='pascal_voc',label_fields=['class_labels']))

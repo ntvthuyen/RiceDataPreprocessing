@@ -9,15 +9,16 @@ transform = A.Compose([
     A.LongestMaxSize(max_size=512),
 ], bbox_params=A.BboxParams(format='pascal_voc', label_fields=['class_labels']))
 
-def plot_image_bboxes(image, bboxes, store_name = ""):
-    # based on Peter's kernel
-    # fig, ax = plt.subplots(1, 1, figsize=(16, 8))
-    
+def plot_image_bboxes(image, bboxes, color, line):    
     for box in bboxes: 
-        a = cv2.rectangle(image, (int(box[0]), int(box[1])), (int(box[2]), int(box[3])), (random.randint(100,255), random.randint(0,150), random.randint(100,255)), 3)
-        
-    if store_name != "":
-        cv2.imwrite(store_name, image)
+        a = cv2.rectangle(image, (int(box[0]), int(box[1])), (int(box[2]), int(box[3])), color, line)
+    return image
+    
+def visualize_single_image(image, prediction, target,  store_name = ""):
+    image = plot_image_bboxes(image, prediction, (0,0,255), 4)
+    image = plot_image_bboxes(image, target, (255,0,0), 1)
+    cv2.imwrite(store_name, image)
+
 
 def visualize(anno_path, image_path, folder):
     anno_list = sorted(os.listdir(anno_path))

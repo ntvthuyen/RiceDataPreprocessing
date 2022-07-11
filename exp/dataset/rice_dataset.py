@@ -6,11 +6,14 @@ from torch.utils.data import DataLoader, Dataset
 import torch
 
 class RiceDataset(Dataset):
-    def __init__(self, anno_dir, image_dir, transforms=None, phase='train'):
+    def __init__(self, anno_dir, image_dir, transforms=None, phase='train', anno_list = None):
         super().__init__()
-
+        
         self.anno_dir = anno_dir
-        self.anno_list = sorted(os.listdir(anno_dir))
+        if anno_list:
+            self.anno_list=anno_list
+        else:
+            self.anno_list = sorted(os.listdir(anno_dir))
         self.image_dir = image_dir
         self.transforms = transforms
         self.phase = phase
@@ -40,11 +43,11 @@ class RiceDataset(Dataset):
         # all the labels are shifted by 1 to accomodate background
         class_id = None
         if '10018' in image_id:
-            class_id = 0.0
-        elif '12221' in image_id:
             class_id = 1.0
-        else:
+        elif '12221' in image_id:
             class_id = 2.0
+        else:
+            class_id = 3.0
         class_ids = [class_id]*(len(records))
         
         labels = torch.as_tensor(class_ids, dtype=torch.int64)
