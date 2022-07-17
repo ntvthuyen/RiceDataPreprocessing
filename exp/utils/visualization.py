@@ -4,19 +4,22 @@ import random
 import numpy as np
 import pandas as pd
 import albumentations as A
-
-transform = A.Compose([
-    A.LongestMaxSize(max_size=512),
-], bbox_params=A.BboxParams(format='pascal_voc', label_fields=['class_labels']))
+from models.model_utils import get_vil_transform
+transform = get_vil_transform()
+image_transform = A.Compose([
+        A.LongestMaxSize(max_size=1024)
+    ])
 
 def plot_image_bboxes(image, bboxes, color, line):    
     for box in bboxes: 
         a = cv2.rectangle(image, (int(box[0]), int(box[1])), (int(box[2]), int(box[3])), color, line)
     return image
     
-def visualize_single_image(image, prediction, target,  store_name = ""):
+def visualize_single_image(image, prediction, target, plabels, tlables, store_name = ""):
+    image = transform(image=image)['image']
     image = plot_image_bboxes(image, prediction, (0,0,255), 4)
-    image = plot_image_bboxes(image, target, (255,0,0), 1)
+    image = plot_image_bboxes(image, target, (255,0,0), 3)
+    image = image_transform(image=image)['image']
     cv2.imwrite(store_name, image)
 
 
