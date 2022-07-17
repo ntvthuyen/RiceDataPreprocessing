@@ -48,7 +48,7 @@ class FasterRCNNDetector(pl.LightningModule):
     def __init__(self, **kwargs):
         super().__init__()
 
-        self.model = models.detection.fasterrcnn_resnet50_fpn(weights=torchvision.models.detection.faster_rcnn.FasterRCNN_ResNet50_FPN_Weights.DEFAULT)
+        self.model = models.detection.fasterrcnn_resnet50_fpn(weights=torchvision.models.detection.FasterRCNN_ResNet50_FPN_Weights.DEFAULT)
         num_classes = 4
         in_features = self.model.roi_heads.box_predictor.cls_score.in_features
         self.model.roi_heads.box_predictor = FastRCNNPredictor(in_features, num_classes)
@@ -67,10 +67,10 @@ class FasterRCNNDetector(pl.LightningModule):
         self.val_dataset = RiceDataset(self.anno_dir, self.image_dir, self.test_transform)
 
     def train_dataloader(self):
-        return DataLoader(self.train_dataset, batch_size=self.batch_size, shuffle=True, pin_memory=True, num_workers=4, collate_fn=collate_fn)
+        return DataLoader(self.train_dataset, batch_size=self.batch_size, shuffle=True, pin_memory=True, num_workers=8, collate_fn=collate_fn)
 
     def val_dataloader(self):
-        return DataLoader(self.val_dataset, batch_size=self.batch_size, shuffle=False, pin_memory=True, num_workers=4, collate_fn=collate_fn)
+        return DataLoader(self.val_dataset, batch_size=self.batch_size, shuffle=False, pin_memory=True, num_workers=8, collate_fn=collate_fn)
 
     def training_step(self, batch, batch_idx):
         images, targets = batch

@@ -22,7 +22,7 @@ import sys
 sys.path.insert(1, 'models')
 from utils.visualization import *
 SEED = 2484
-DEVICE = torch.device('cuda')
+DEVICE = torch.device('cuda:1')
 pl.utilities.seed.seed_everything(SEED)
 
 train_anno_path = '../../new_annotation/anno_train'
@@ -42,12 +42,12 @@ net = FasterRCNNDetector.load_from_checkpoint('checkpoint.ckpt', anno_dir=train_
 
 test_dataset = RiceDataset(
     test_anno_path, test_image_path, get_val_transform())
-test_data_loader = DataLoader(test_dataset, batch_size=4, shuffle=False,
+test_data_loader = DataLoader(test_dataset, batch_size=1, shuffle=False,
                               pin_memory=True, num_workers=4, collate_fn=collate_fn)
 
 
 
-detection_threshold = 0.5
+detection_threshold = 0.2
 results = []
 net.model.to(DEVICE)
 net.model.eval()
@@ -65,12 +65,9 @@ prediction = []
 ground_truth = []
 
 
-test_images = sorted(os.listdir(test_image_path))
+test_images = sorted(os.listdir(test_anno_path))
 t = 0
 
-image_transform = A.Compose([
-        A.LongestMaxSize(max_size=1024)
-    ])
 
 with torch.no_grad():
     for images, targets in test_data_loader:
@@ -105,7 +102,7 @@ with torch.no_grad():
             if target['labels'][0] == 1.0:
                 ground_truth_l1.append(ground_truth[-1])        
             elif target['labels'][0] == 2.0:
-                ground_truth_l1.append(ground_truth[-1])        
+                ground_truth_l2.append(ground_truth[-1])        
             else:
                 ground_truth_l3.append(ground_truth[-1])        
 
@@ -116,11 +113,9 @@ with torch.no_grad():
             else:
                 prediction_l3.append(prediction[-1])        
             
-            if test_transform:
-                timage = image_transform(image=cv2.imread(test_image_path+'/'+test_images[t]))
-            else:
-                timage = cv2.imread(test_image_path+'/'+test_images[t])
-            visualize_single_image(timage['image'], prediction[-1]['boxes'].data.cpu().numpy(),ground_truth[len(prediction)-1]['boxes'].data.cpu().numpy(),'test_visualization/' +test_images[t])
+            timage = cv2.imread(test_image_path+'/'+test_images[t][:-4]+'.jpg')
+
+            visualize_single_image(timage, prediction[-1]['boxes'].data.cpu().numpy(), ground_truth[len(prediction)-1]['boxes'].data.cpu().numpy(), prediction[-1]['labels'].data.cpu().numpy(), ground_truth[len(prediction)-1]['labels'].data.cpu().numpy(), 'test_visualization/' +test_images[t][:-4]+'.jpg')
             t=t+1
 print(len(prediction), len(ground_truth))
 metric = MeanAveragePrecision()

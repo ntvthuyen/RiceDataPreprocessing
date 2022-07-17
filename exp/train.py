@@ -40,7 +40,7 @@ val_image_path = '../../Lua/JPGimages/valid'
 train_transform = get_train_transform()
 test_transform = get_val_transform()
 
-net = FasterRCNNDetector(anno_dir=train_anno_path, image_dir=train_image_path, transform = train_transform, test_transform=test_transform, batch_size = 8)
-trainer = pl.Trainer(max_epochs=20, gpus=1, progress_bar_refresh_rate=100, callbacks=[EarlyStopping(monitor="avg_val_iou", mode="max")])
+net = FasterRCNNDetector(anno_dir=train_anno_path, image_dir=train_image_path, transform = train_transform, test_transform=test_transform, batch_size = 4)
+trainer = pl.Trainer(max_epochs=30, accelerator="gpu", devices=[1], progress_bar_refresh_rate=100, callbacks=[EarlyStopping(monitor="avg_val_iou", mode="max")])
 trainer.fit(net)
 trainer.save_checkpoint("checkpoint.ckpt")
