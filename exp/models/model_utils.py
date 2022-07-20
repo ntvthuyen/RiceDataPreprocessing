@@ -31,7 +31,8 @@ def get_train_transform(max_size=1024):
         A.LongestMaxSize(max_size=2500),
         A.SmallestMaxSize(max_size=1500),
         A.Flip(0.5),
-        A.RandomSizedBBoxSafeCrop(width=600,height=600, p= 0.7),
+        A.RandomSizedBBoxSafeCrop(width=1000,height=1000, p=0.5),
+        A.Rotate(limit=90, p=0.5),
         ToTensorV2(p=1.0)
     ], bbox_params=A.BboxParams(format='pascal_voc',label_fields=['class_labels']))
 
