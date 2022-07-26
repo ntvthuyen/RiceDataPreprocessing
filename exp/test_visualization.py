@@ -37,11 +37,15 @@ val_image_path = '../../Lua/JPGimages/valid'
 train_transform = get_train_transform()
 test_transform = get_val_transform()
 
-net = FasterRCNNDetector.load_from_checkpoint('checkpoint.ckpt', anno_dir=train_anno_path,
+net = FasterRCNNDetector.load_from_checkpoint('no_augmentation.ckpt', anno_dir=train_anno_path,
                                               image_dir=train_image_path, transform=train_transform, test_transform=test_transform, batch_size=16)
 
+
+#test_anno_path = '../../new_annotation/anno_val'
+#test_image_path = '../../Lua/JPGimages/valid'
+
 test_dataset = RiceDataset(
-    test_anno_path, test_image_path, get_val_transform())
+    test_anno_path, test_image_path, get_val_transform(),phase='test')
 test_data_loader = DataLoader(test_dataset, batch_size=1, shuffle=False,
                               pin_memory=True, num_workers=4, collate_fn=collate_fn)
 
@@ -80,7 +84,6 @@ with torch.no_grad():
                 boxes=target['boxes'].to(DEVICE),
                 labels=target['labels'].to(DEVICE))
             )
-
             boxes = outputs[i]['boxes']
             labels = outputs[i]['labels']
             scores = outputs[i]['scores']
@@ -115,7 +118,7 @@ with torch.no_grad():
             
             timage = cv2.imread(test_image_path+'/'+test_images[t][:-4]+'.jpg')
 
-            visualize_single_image(timage, prediction[-1]['boxes'].data.cpu().numpy(), ground_truth[len(prediction)-1]['boxes'].data.cpu().numpy(), prediction[-1]['labels'].data.cpu().numpy(), ground_truth[len(prediction)-1]['labels'].data.cpu().numpy(), 'test_visualization/' +test_images[t][:-4]+'.jpg')
+            visualize_single_image(timage, prediction[-1]['boxes'].data.cpu().numpy(), ground_truth[len(prediction)-1]['boxes'].data.cpu().numpy(), prediction[-1]['labels'].data.cpu().numpy(), ground_truth[len(prediction)-1]['labels'].data.cpu().numpy(), 'val_visualization/' +test_images[t][:-4]+'.jpg')
             t=t+1
 print(len(prediction), len(ground_truth))
 metric = MeanAveragePrecision()

@@ -10,15 +10,23 @@ image_transform = A.Compose([
         A.LongestMaxSize(max_size=1024)
     ])
 
-def plot_image_bboxes(image, bboxes, color, line):    
+def plot_image_bboxes(image, bboxes, line, labels, target=False):
+    colors = [(252, 186, 3), (3, 69, 252), (252, 3, 53)]
+    text = 'pred:'
+    if target:
+        colors = [(98, 252, 3), (3, 252, 240), (157, 3, 252)]
+        text = 'target:'
+    i = 0
     for box in bboxes: 
-        a = cv2.rectangle(image, (int(box[0]), int(box[1])), (int(box[2]), int(box[3])), color, line)
+        a = cv2.rectangle(image, (int(box[0]), int(box[1])), (int(box[2]), int(box[3])), colors[int(labels[i]-1)], line)
+        cv2.putText(a, text+str(int(labels[i])), (int(box[0]), int(box[1]-10)), cv2.FONT_HERSHEY_SIMPLEX, 0.9, colors[int(labels[i]-1)], 5)
+        i=i+1
     return image
     
 def visualize_single_image(image, prediction, target, plabels, tlables, store_name = ""):
     image = transform(image=image)['image']
-    image = plot_image_bboxes(image, prediction, (0,0,255), 4)
-    image = plot_image_bboxes(image, target, (255,0,0), 3)
+    image = plot_image_bboxes(image, prediction,  4, plabels)
+    image = plot_image_bboxes(image, target, 3, tlables, target=True)
     image = image_transform(image=image)['image']
     cv2.imwrite(store_name, image)
 

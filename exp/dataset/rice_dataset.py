@@ -28,7 +28,7 @@ class RiceDataset(Dataset):
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB).astype(np.float32)
         image /= 255.0
 
-        if self.phase == 'test':
+        if self.phase == 'use':
             if self.transforms:
                 sample = {
                     'image': image,
@@ -40,15 +40,27 @@ class RiceDataset(Dataset):
         boxes = torch.as_tensor(records[['xmin', 'ymin', 'xmax', 'ymax']].values, dtype = torch.float32)
         area = (boxes[:, 3] - boxes[:, 1]) * (boxes[:, 2] - boxes[:, 0])
         area = torch.as_tensor(area, dtype=torch.float32)
-        # all the labels are shifted by 1 to accomodate background
-        class_id = None
-        if '10018' in image_id:
-            class_id = 1.0
-        elif '12221' in image_id:
-            class_id = 2.0
+        if self.phase == 'train':
+            class_id = None
+            if '10018' in image_id:
+                class_id = 1.0
+            elif '12221' in image_id:
+                class_id = 2.0
+            else:
+                class_id = 3.0
+            class_ids = [class_id]*(len(records))
         else:
-            class_id = 3.0
-        class_ids = [class_id]*(len(records))
+            try:
+                class_ids = records['label'].to_list()          
+            except:
+                class_id = None
+                if '10018' in image_id:
+                    class_id = 1.0
+                elif '12221' in image_id:
+                    class_id = 2.0
+                else:
+                    class_id = 3.0
+                class_ids = [class_id]*(len(records))
         
         labels = torch.as_tensor(class_ids, dtype=torch.int64)
         
@@ -79,4 +91,3 @@ class RiceDataset(Dataset):
 
     def __len__(self):
         return len(self.anno_list)
-
