@@ -1,4 +1,5 @@
 import sys
+import argparse
 sys.path.insert(1,'models')
 import pandas as pd
 import numpy as np
@@ -23,6 +24,8 @@ from torchmetrics import AveragePrecision
 from models.faster_rcnn import *
 from dataset.rice_dataset import *
 from models.model_utils import *
+from models.dengshanli_faster_rcnn import *
+from models.resnet18_faster_rcnn import *
 
 SEED=33
 DEVICE=torch.device('cuda')
@@ -37,10 +40,26 @@ test_image_path = '../../Lua/JPGimages/test'
 val_anno_path = '../../new_annotation/anno_val'
 val_image_path = '../../Lua/JPGimages/valid'
 
-train_transform = get_train_transform()
-test_transform = get_train_transform()
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='Process some integers.')
+    parser.add_argument('--model', default="resnet50", type=str,
+                        help='select mode: restnet50, resnet18, deshangli')
 
-net = FasterRCNNDetector(anno_dir=train_anno_path, image_dir=train_image_path, transform = train_transform, test_transform=test_transform, batch_size = 4)
-trainer = pl.Trainer(max_epochs=30, accelerator="gpu", devices=[1], progress_bar_refresh_rate=100)#, callbacks=[EarlyStopping(monitor="avg_val_iou", mode="max")])
-trainer.fit(net)
-trainer.save_checkpoint("checkpoint.ckpt")
+    args = parser.parse_args()
+    print(args)
+
+    train_transform = get_train_transform()
+    test_transform = get_train_transform()
+    net = None
+
+    model = args.model
+
+    if model == 'resnet50':
+        net = FasterRCNNDetector(anno_dir=train_anno_path, image_dir=train_image_path, transform = train_transform, test_transform=test_transform, batch_size = 4)
+    if model == 'dengshanli':
+        net = DengShanLiFasterRCNNDetector(anno_dir=train_anno_path, image_dir=train_image_path, transform = train_transform, test_transform=test_transform, batch_size = 2)
+    if model == 'resnet18':
+        net = ResNet18FasterRCNNDetector(anno_dir=train_anno_path, image_dir=train_image_path, transform = train_transform, test_transform=test_transform, batch_size = 4)
+    trainer = pl.Trainer(max_epochs=10, accelerator="gpu", devices=[1], progress_bar_refresh_rate=100)#, callbacks=[EarlyStopping(monitor="avg_val_iou", mode="max")])
+    trainer.fit(net)
+    trainer.save_checkpoint("checkpoint.ckpt")
