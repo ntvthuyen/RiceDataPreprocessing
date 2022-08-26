@@ -39,12 +39,15 @@ def visualize(anno_path, image_path, folder):
         plot_image_bboxes(transformed_image, target["boxes"], os.path.join(folder, anno_list[anno][:-3]+'jpg'))
 
 if __name__=='__main__': 
-    anno_path = '../anno_train'
-    image_path = '../Lua/JPGimages/train'
-    visualize(anno_path, image_path, 'train')
-    anno_path = '../anno_test'
-    image_path = '../Lua/JPGimages/test'
-    visualize(anno_path, image_path, 'test')
-    anno_path = '../anno_val'
-    image_path = '../Lua/JPGimages/valid'
-    visualize(anno_path, image_path, 'val')
+    anno_path = 'new_augmentation/anno'
+    image_path = 'new_augmentation/imgs'
+    visualize(anno_path, image_path, 'new_augmentation/visualize')
+    #anno_path = '../anno_train'
+    #image_path = '../Lua/JPGimages/train'
+    #visualize(anno_path, image_path, 'train')
+    #anno_path = '../anno_test'
+    #image_path = '../Lua/JPGimages/test'
+    #visualize(anno_path, image_path, 'test')
+    #anno_path = '../anno_val'
+    #image_path = '../Lua/JPGimages/valid'
+    #visualize(anno_path, image_path, 'val')

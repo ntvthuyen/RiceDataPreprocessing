@@ -20,6 +20,7 @@ from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
 from torch.utils.data import DataLoader, Dataset
 import pytorch_lightning as pl
 from torchmetrics import AveragePrecision
+from torchvision.models.detection.backbone_utils import resnet_fpn_backbone
 
 from pl_bolts.models.detection.faster_rcnn import create_fasterrcnn_backbone
 from pl_bolts.utils import _TORCHVISION_AVAILABLE
@@ -49,24 +50,11 @@ def _evaluate_iou(target, pred):
 class ResNet18FasterRCNNDetector(pl.LightningModule):
     def __init__(self, **kwargs):
         super().__init__()
-        resnet_net = torchvision.models.resnet18(pretrained=True)
-        modules = list(resnet_net.children())[:-1]
-        backbone = nn.Sequential(*modules)
-        backbone.out_channels = 512
+
+        self.model = models.detection.fasterrcnn_resnet50_fpn_v2(weights=torchvision.models.detection.FasterRCNN_ResNet50_FPN_V2_Weights.DEFAULT, trainable_backbone_layers=5)
         num_classes = 4
-        anchor_generator = models.detection.rpn.AnchorGenerator(
-            sizes=((32, 64, 128, 256, 512),),
-            aspect_ratios=((0.5, 1.0, 2.0),)
-        ) 
-        roi_pooler = torchvision.ops.MultiScaleRoIAlign(
-            featmap_names=['0'],
-            output_size=7,
-            sampling_ratio=2
-        )   
-        self.model = models.detection.FasterRCNN(backbone=backbone, 
-            num_classes=num_classes, 
-            rpn_anchor_generator=anchor_generator,
-            box_roi_pool=roi_pooler)
+        in_features = self.model.roi_heads.box_predictor.cls_score.in_features
+        self.model.roi_heads.box_predictor = FastRCNNPredictor(in_features, num_classes)
         self.learning_rate = 1e-3
         self.transform = kwargs['transform']
         self.test_transform = kwargs['test_transform']

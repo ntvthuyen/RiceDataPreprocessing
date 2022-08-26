@@ -15,25 +15,27 @@ from torchvision import models
 
 def get_val_transform(max_size=1024):
     return A.Compose([
+        A.SmallestMaxSize(max_size=1000),
         A.LongestMaxSize(max_size=2500),
-        A.SmallestMaxSize(max_size=1500),
         ToTensorV2(p=1.0)
     ], bbox_params=A.BboxParams(format='pascal_voc',label_fields=['class_labels']))
 
 def get_vil_transform(max_size=1024):
     return A.Compose([
-        A.LongestMaxSize(max_size=2500),
-        A.SmallestMaxSize(max_size=1500),
-    ])
+        A.SmallestMaxSize(max_size=1000),
+        A.LongestMaxSize(max_size=2500)
+     ])
 
 def get_train_transform(max_size=1024):
     return A.Compose([
+        A.SmallestMaxSize(max_size=1000),
         A.LongestMaxSize(max_size=2500),
-        A.SmallestMaxSize(max_size=1500),
-        A.Flip(0.5),
-        A.RandomSizedBBoxSafeCrop(width=1000,height=1000, p=0.5),
-        A.Rotate(limit=90, p=0.5),
+        A.Flip(0.3),
+        A.RandomBrightnessContrast(p=0.3),
+        A.RandomSizedBBoxSafeCrop(width=1000,height=1000, p=0.3),
+        A.Rotate(limit=45, p=0.3, border_mode=cv2.BORDER_CONSTANT, value=0),
         ToTensorV2(p=1.0)
+
     ], bbox_params=A.BboxParams(format='pascal_voc',label_fields=['class_labels']))
 
 def get_valid_transform():

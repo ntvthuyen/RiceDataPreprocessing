@@ -6,6 +6,7 @@ import pandas as pd
 import numpy as np
 import cv2
 import os
+from torchmetrics.detection.mean_ap import MeanAveragePrecision
 
 import albumentations as A
 from albumentations.pytorch.transforms import ToTensorV2
@@ -58,6 +59,8 @@ class FasterRCNNDetector(pl.LightningModule):
         self.batch_size = kwargs['batch_size']
         self.anno_dir = kwargs['anno_dir']
         self.image_dir = kwargs['image_dir']
+        self.metric = MeanAveragePrecision()
+
 
     def forward(self, x):
         return self.model(x)
@@ -82,14 +85,16 @@ class FasterRCNNDetector(pl.LightningModule):
     def validation_step(self, batch, batch_idx):
         images, targets = batch
         # fasterrcnn takes only images for eval() mode
+
         outs = self.model(images)
         iou = torch.stack([_evaluate_iou(t, o) for t, o in zip(targets, outs)]).mean()
+
         return {"val_iou": iou}
 
     def validation_epoch_end(self, outs):
         avg_iou = torch.stack([o["val_iou"] for o in outs]).mean()
         logs = {"val_iou": avg_iou}
-        self.log("avg_val_iou", avg_iou)
+        self.log("avg_val_iou", avg_iou, on_step=False, on_epoch=True, prog_bar=True, logger=True)
         return {"avg_val_iou": avg_iou, "log": logs}
 
     def configure_optimizers(self):

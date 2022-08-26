@@ -1,12 +1,17 @@
 from pprint import pprint
 from models.model_utils import *
 from dataset.rice_dataset import *
+
 from models.faster_rcnn import *
+from models.resnet18_faster_rcnn import *
+
+
 from torchmetrics import AveragePrecision
 import pytorch_lightning as pl
 from torch.utils.data import DataLoader, Dataset
 from torchmetrics.detection.mean_ap import MeanAveragePrecision
 from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
+
 from torchvision import models
 from torchvision.ops import box_iou, MultiScaleRoIAlign
 import torchvision
@@ -22,7 +27,7 @@ import sys
 sys.path.insert(1, 'models')
 from utils.visualization import *
 SEED = 2484
-DEVICE = torch.device('cuda:1')
+DEVICE = torch.device('cuda:0')
 pl.utilities.seed.seed_everything(SEED)
 
 train_anno_path = '../../new_annotation/anno_train'
@@ -37,8 +42,8 @@ val_image_path = '../../Lua/JPGimages/valid'
 train_transform = get_train_transform()
 test_transform = get_val_transform()
 
-net = FasterRCNNDetector.load_from_checkpoint('no_augmentation.ckpt', anno_dir=train_anno_path,
-                                              image_dir=train_image_path, transform=train_transform, test_transform=test_transform, batch_size=16)
+net = FasterRCNNDetector.load_from_checkpoint('23:11:15s2577_e15_checkpoint.ckpt', anno_dir=train_anno_path,
+                                              image_dir=train_image_path, transform=train_transform, test_transform=test_transform, batch_size=4)
 
 
 #test_anno_path = '../../new_annotation/anno_val'
@@ -50,8 +55,9 @@ test_data_loader = DataLoader(test_dataset, batch_size=1, shuffle=False,
                               pin_memory=True, num_workers=4, collate_fn=collate_fn)
 
 
+anno_list = sorted(os.listdir(test_anno_path))
 
-detection_threshold = 0.2
+detection_threshold = 0.3
 results = []
 net.model.to(DEVICE)
 net.model.eval()
@@ -71,14 +77,16 @@ ground_truth = []
 
 test_images = sorted(os.listdir(test_anno_path))
 t = 0
-
+z=0
 
 with torch.no_grad():
     for images, targets in test_data_loader:
         images = list(image.to(DEVICE) for image in images)
         outputs = net.model(images)
-
+        filename = anno_list[z]
+        z=z+1
         for i, image in enumerate(images):
+            
             target = targets[i]
             ground_truth.append(dict(
                 boxes=target['boxes'].to(DEVICE),
@@ -102,16 +110,16 @@ with torch.no_grad():
                     labels=torch.tensor([], device=DEVICE)
                 ))
             
-            if target['labels'][0] == 1.0:
+            if '10018' in filename:
                 ground_truth_l1.append(ground_truth[-1])        
-            elif target['labels'][0] == 2.0:
+            elif '12221' in filename:
                 ground_truth_l2.append(ground_truth[-1])        
             else:
                 ground_truth_l3.append(ground_truth[-1])        
 
-            if target['labels'][0] == 1.0:
+            if  '10018' in filename:
                 prediction_l1.append(prediction[-1])        
-            elif target['labels'][0] == 2.0:
+            elif '12221' in filename:
                 prediction_l2.append(prediction[-1])        
             else:
                 prediction_l3.append(prediction[-1])        
@@ -123,20 +131,20 @@ with torch.no_grad():
 print(len(prediction), len(ground_truth))
 metric = MeanAveragePrecision()
 metric.update(prediction, ground_truth)
-pprint(metric.compute())
+print(metric.compute())
 
 print(len(prediction_l1), len(ground_truth_l1))
 metric = MeanAveragePrecision()
 metric.update(prediction_l1, ground_truth_l1)
-pprint(metric.compute())
+print(metric.compute())
 
 print(len(prediction_l2), len(ground_truth_l2))
 metric = MeanAveragePrecision()
 metric.update(prediction_l2, ground_truth_l2)
-pprint(metric.compute())
+print(metric.compute())
 
 print(len(prediction_l3), len(ground_truth_l3))
 metric = MeanAveragePrecision()
 metric.update(prediction_l3, ground_truth_l3)
-pprint(metric.compute())
+print(metric.compute())
 

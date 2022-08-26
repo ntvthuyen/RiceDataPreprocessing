@@ -4,6 +4,10 @@ import cv2
 import os
 from torch.utils.data import DataLoader, Dataset
 import torch
+import albumentations as A
+from albumentations.pytorch.transforms import ToTensorV2
+
+
 
 class RiceDataset(Dataset):
     def __init__(self, anno_dir, image_dir, transforms=None, phase='train', anno_list = None):
@@ -73,6 +77,7 @@ class RiceDataset(Dataset):
         target['iscrowd'] = iscrowd
         if self.transforms:
             transformed = self.transforms(image=image, bboxes=boxes, class_labels=labels)
+
             image = transformed['image']
             target["boxes"] = torch.as_tensor(transformed['bboxes'], dtype = torch.float32)
             target["labels"] = torch.as_tensor(transformed['class_labels'], dtype=torch.int64)

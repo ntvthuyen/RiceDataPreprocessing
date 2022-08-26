@@ -7,7 +7,7 @@ import albumentations as A
 from models.model_utils import get_vil_transform
 transform = get_vil_transform()
 image_transform = A.Compose([
-        A.LongestMaxSize(max_size=1024)
+        A.LongestMaxSize(max_size=640)
     ])
 
 def plot_image_bboxes(image, bboxes, line, labels, target=False):
